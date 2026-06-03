@@ -16,8 +16,7 @@ public class GridManager : MonoBehaviour
     
     private Vector2 offset = new Vector2(0,0);
     private List<GameObject> listGridSquare = new List<GameObject>();
-
-
+    private LineIndicator lineIndicator;
     private void OnEnable()
     {
         GameEvent.CheckIfShapeCanBePlaced += CheckIfShapeCanBePlaced;
@@ -49,20 +48,22 @@ public class GridManager : MonoBehaviour
                 listGridSquare[index].GetComponent<GridSquare>().PlaceShapeOnBoard();
             }
 
-            // int shapeLeft = 0;
-            // foreach(var shape in shapeStorage.shapeList)
-            // {
-            //     if(shape.IsOnStartPosition() && shape.IsAnyOfShapeSquareActive()) shapeLeft++;
-            // }
-           currentSelectedShape.DeactivateShape();
-            // if(shapeLeft == 0)
-            // {
-            //     GameEvent.RequestNewShapes?.Invoke();
-            // }
-            // else
-            // {
-            //     GameEvent.SetShapeInActive?.Invoke();
-            // }
+            int shapeLeft = 0;
+            foreach(var shape in shapeStorage.shapeList)
+            {
+                if(shape.IsOnStartPosition() && shape.IsAnyOfShapeSquareActive()) shapeLeft++;
+            }
+        //     Debug.Log("Shape left: " + shapeLeft);
+            //currentSelectedShape.DeactivateShape();
+            if(shapeLeft == 0)
+            {
+                GameEvent.RequestNewShapes?.Invoke();
+            }
+            else
+            {
+                GameEvent.SetShapeInActive?.Invoke();
+            }
+        
         }else{
             GameEvent.MoveShapeToStartPosition?.Invoke();
         }
@@ -70,6 +71,7 @@ public class GridManager : MonoBehaviour
 
     private void Start()
     {
+        lineIndicator = GetComponent<LineIndicator>();
         SpawnGridSquare();
         SetGridSquarePosition();
     }
@@ -85,7 +87,8 @@ public class GridManager : MonoBehaviour
                 listGridSquare[listGridSquare.Count - 1].GetComponent<GridSquare>().SquareIndex = square_index;
                 listGridSquare[listGridSquare.Count - 1].transform.SetParent(this.transform);
                 listGridSquare[listGridSquare.Count-1].transform.localScale = new Vector3(squareScale, squareScale, squareScale);
-                listGridSquare[listGridSquare.Count - 1].GetComponent<GridSquare>().setFirstImage(square_index % 2 == 0);
+                listGridSquare[listGridSquare.Count - 1].GetComponent<GridSquare>()
+                .setFirstImage(lineIndicator.GetGridSquareIndex(square_index) % 2 == 0);
                 square_index++;
             }
         }
