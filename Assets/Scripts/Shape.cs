@@ -1,31 +1,126 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class Shape : MonoBehaviour
+public class Shape : MonoBehaviour, IPointerClickHandler, IPointerUpHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerDownHandler
 {
     [SerializeField] private GameObject squareShapeImage;
+    [HideInInspector] public ShapeData currentShapeData;
 
-    //[HideInInspector] 
-    public ShapeData currentShapeData;
+    public int TotalSquareNumber {get; set;}
 
+    private Vector3 shapeSelectedScale = new Vector3(0.8f, 0.8f, 0.8f) ;
+    private Vector3 shapeStartScale;
+    private Vector3 shapePlacedScale = new Vector3(0.7f, 0.7f, 0.7f);
+    private Vector2 offset = new Vector2(0, 700);
     private List<GameObject> currentShapeList = new List<GameObject>();
-    private void Start()
+    private RectTransform shapeRectTransform;
+    private bool shapeDraggable = true;
+    private Canvas canvas;
+    private Vector2 startPosition;
+    private Vector2 startAnchoredPosition;
+    private Vector2 startAnchorMin;
+    private Vector2 startAnchorMax;
+    private Vector2 startPivot;
+    private bool isShapeActive = true;
+
+    private void Awake()
     {
-        RequestNewShape(currentShapeData);    
+        shapeStartScale = transform.localScale;
+        shapeRectTransform = GetComponent<RectTransform>();
+        canvas = GetComponentInParent<Canvas>();
+        shapeDraggable = true;  
+        startPosition = shapeRectTransform.anchoredPosition;
+        startAnchoredPosition = shapeRectTransform.anchoredPosition;
+        startAnchorMin = shapeRectTransform.anchorMin;
+        startAnchorMax = shapeRectTransform.anchorMax;
+        startPivot = shapeRectTransform.pivot;
+        isShapeActive = true;
     }
 
+    private void OnEnable()
+    {
+        GameEvent.MoveShapeToStartPosition += MoveShapeToStartPosition;
+        //GameEvent.SetShapeInActive += SetShapeInActive;
+    }
+    private void OnDisable()
+    {
+        GameEvent.MoveShapeToStartPosition -= MoveShapeToStartPosition;
+        //GameEvent.SetShapeInActive -= SetShapeInActive;
+    }
+    private void MoveShapeToStartPosition()
+    {
+        ResetShapeRectTransform();
+    }
+    public bool IsOnStartPosition()
+    {
+        return shapeRectTransform.anchoredPosition == startAnchoredPosition;
+    }
+    public bool IsAnyOfShapeSquareActive()
+    {
+        foreach(var square in currentShapeList)
+        {
+            if (square.gameObject.activeSelf)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    public void DeactivateShape()
+    {
+        if (isShapeActive)
+        {
+            foreach(var square in currentShapeList)
+            {
+                square?.GetComponent<ShapeSquare>().DeactivateShape();
+            }
+        }
+        isShapeActive = false;
+    }
+    // private void SetShapeInActive()
+    // {
+    //     if(!IsOnStartPosition() && !IsAnyOfShapeSquareActive())
+    //     {
+    //         foreach(var square in currentShapeList)
+    //         {
+    //             square.gameObject.SetActive(false);
+    //         }
+    //     }
+    // }
+    public void ActivateShape()
+    {
+        if (!isShapeActive)
+        {
+            foreach(var square in currentShapeList)
+            {
+                square?.GetComponent<ShapeSquare>().ActivateShape();
+            }
+        }
+        isShapeActive = true;
+    }
     public void RequestNewShape(ShapeData shapeData)
     {
+        ResetShapeRectTransform();
         CreateShape(shapeData);
+    }
+
+    private void ResetShapeRectTransform()
+    {
+        shapeRectTransform.anchorMin = startAnchorMin;
+        shapeRectTransform.anchorMax = startAnchorMax;
+        shapeRectTransform.pivot = startPivot;
+        shapeRectTransform.anchoredPosition = startAnchoredPosition;
+        this.GetComponent<RectTransform>().localScale = shapeStartScale;
     }
 
     public void CreateShape(ShapeData shapeData)
     {
         currentShapeData = shapeData;
-        var totalSquareNumber = GetNumberOfSquare(shapeData);
+        TotalSquareNumber = GetNumberOfSquare(shapeData);
 
-        while (currentShapeList.Count <= totalSquareNumber) {
+        while (currentShapeList.Count < TotalSquareNumber) {
             currentShapeList.Add(Instantiate(squareShapeImage, transform) as GameObject);
         }
 
@@ -35,7 +130,7 @@ public class Shape : MonoBehaviour
         }
 
         var squareRect = squareShapeImage.GetComponent<RectTransform>();
-        var moveDistance = new Vector2(squareRect.rect.width * squareRect.localScale.x, squareRect.rect.height * squareRect.localScale.y);
+        var cellSize = new Vector2(squareRect.rect.width * squareRect.localScale.x, squareRect.rect.height * squareRect.localScale.y);
 
         int currentIndexInList = 0;
         for (var row = 0; row < shapeData.rows; row++) { //set positions to form final shape
@@ -44,7 +139,7 @@ public class Shape : MonoBehaviour
                 {
                     currentShapeList[currentIndexInList].SetActive(true);
                     currentShapeList[currentIndexInList].GetComponent<RectTransform>().localPosition =
-                        new Vector2(GetXPositionForShapeSquare(shapeData, col, moveDistance), GetYPositionForShapeSquare(shapeData, row, moveDistance));
+                        new Vector2(GetXPositionForShapeSquare(shapeData, col, cellSize), GetYPositionForShapeSquare(shapeData, row, cellSize));
 
                     currentIndexInList++;
                 }
@@ -54,103 +149,16 @@ public class Shape : MonoBehaviour
 
     private float GetYPositionForShapeSquare(ShapeData shapeData, int row, Vector2 moveDistance)
     {
-        float shiftOnY = 0f;
-        if (shapeData.rows > 1)
-        {
-            if (shapeData.rows%2 != 0) {
-                var middleSquareIndex = (shapeData.rows-1)/2;
-                var multiplier = (shapeData.rows-1)/2;
-
-                if(row < middleSquareIndex) //move it on minus
-                {
-                    shiftOnY = moveDistance.y * 1;
-                    shiftOnY *= multiplier;
-                }
-                else if(row > middleSquareIndex) //move it on plus
-                {
-                    shiftOnY = moveDistance.y * -1;
-                    shiftOnY *= multiplier;
-                }
-            }
-            else
-            {
-                var middleSquareIndex1 =  (shapeData.rows == 2) ? 0 : (shapeData.rows-1);
-                var middleSquareIndex2 =  (shapeData.rows == 2) ? 1 : (shapeData.rows/2);
-                var multiplier = shapeData.rows/2;
-
-                if(row == middleSquareIndex1 || row == middleSquareIndex2)
-                {
-                    if(row == middleSquareIndex2)
-                    {
-                        shiftOnY = (moveDistance.y / 2) * -1;
-                    }
-                    if(row == middleSquareIndex1)
-                    {
-                        shiftOnY = (moveDistance.y/2) * 1;
-                    }
-                }if(row < middleSquareIndex1 && row < middleSquareIndex2) //move it on minus
-                {
-                    shiftOnY = moveDistance.y * 1;
-                    shiftOnY *= multiplier;
-                }else if(row > middleSquareIndex1 && row > middleSquareIndex2) //move it on plus
-                {
-                    shiftOnY = moveDistance.y * -1;
-                    shiftOnY *= multiplier;
-                }
-            }
-        }
-        return shiftOnY;
+        // Simplified, robust centering: treat center as (rows-1)/2 and offset by row index
+        float center = (shapeData.rows - 1) / 2f;
+        return (row - center) * moveDistance.y;
     }
 
     private float GetXPositionForShapeSquare(ShapeData shapeData, int column, Vector2 moveDistance)
     {
-        float shiftOnX = 0.0f;
-        if(shapeData.columns > 1) { //vertical position caculation 
-            if (shapeData.columns % 2 != 0)
-            {
-                var middleSquareIndex = (shapeData.columns - 1) / 2;
-                var multiplier = (shapeData.columns - 1) / 2;
-                if (column < middleSquareIndex)
-                { //move it on the negative 
-                    shiftOnX = moveDistance.x * -1;
-                    shiftOnX *= multiplier;
-                }
-                else if (column > middleSquareIndex)
-                { //move it on the plus 
-                    shiftOnX = moveDistance.x * 1;
-                    shiftOnX *= multiplier;
-                }
-            }
-            else
-            {
-                var middleSquareIndex2 = (shapeData.columns == 2) ? 1 : (shapeData.columns / 2);
-                var middleSquareIndex1 = (shapeData.columns == 2) ? 0 : (shapeData.columns - 1);
-                var multiplier = shapeData.columns / 2;
-
-                if (column == middleSquareIndex2 || column == middleSquareIndex1)
-                {
-                    if (column == middleSquareIndex2)
-                    {
-                        shiftOnX = moveDistance.x / 2;
-                    }
-                    if (column == middleSquareIndex1)
-                    {
-                        shiftOnX = (moveDistance.x / 2) * -1;
-                    }
-                }
-                if(column < middleSquareIndex1 && column < middleSquareIndex2) //move it on negative
-                {
-                    shiftOnX = moveDistance.x * -1;
-                    shiftOnX *= multiplier;
-                }
-                else if(column > middleSquareIndex1 && column > middleSquareIndex2) //move it on plus
-                {
-                    shiftOnX = moveDistance.x * 1;
-                    shiftOnX *= multiplier;
-                }
-            }
-        }
-        return shiftOnX;
+        // Simplified, robust centering: treat center as (columns-1)/2 and offset by column index
+        float center = (shapeData.columns - 1) / 2f;
+        return (column - center) * moveDistance.x;
     }
     private int GetNumberOfSquare(ShapeData shapeData)
     {
@@ -169,4 +177,41 @@ public class Shape : MonoBehaviour
          return number;
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        shapeRectTransform.anchorMin = new Vector2(0, 0);
+        shapeRectTransform.anchorMax = new Vector2(0, 0);
+        shapeRectTransform.pivot = new Vector2(0, 0);
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, 
+        eventData.position, canvas.worldCamera, out Vector2 localPoint);
+        shapeRectTransform.localPosition = localPoint + offset;
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        this.GetComponent<RectTransform>().localScale = shapePlacedScale;
+        GameEvent.CheckIfShapeCanBePlaced?.Invoke();
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        this.GetComponent<RectTransform>().localScale = shapeSelectedScale;
+         
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
 }

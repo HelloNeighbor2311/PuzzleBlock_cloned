@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    public ShapeStorage shapeStorage;
     public int rows = 0;
     public int cols = 0;
     public float squareScale = 0.5f;
@@ -16,11 +18,62 @@ public class GridManager : MonoBehaviour
     private List<GameObject> listGridSquare = new List<GameObject>();
 
 
+    private void OnEnable()
+    {
+        GameEvent.CheckIfShapeCanBePlaced += CheckIfShapeCanBePlaced;
+    }
+
+    private void OnDisable()
+    {
+        GameEvent.CheckIfShapeCanBePlaced -= CheckIfShapeCanBePlaced;
+    }
+    private void CheckIfShapeCanBePlaced()
+    {
+        var squareIndexes = new List<int>();
+        foreach(var square in listGridSquare)
+        {
+            var squareValue = square.GetComponent<GridSquare>();
+            if(squareValue.Selected && !squareValue.SquareOccupied)
+            {
+                squareIndexes.Add(squareValue.SquareIndex);
+                squareValue.Selected = false;
+                //squareValue.ActivateSquare();
+            }
+        }
+        var currentSelectedShape = shapeStorage.GetCurrentSelectedShape();
+        if(currentSelectedShape == null) return; //There is no selected shape
+
+        if(currentSelectedShape.TotalSquareNumber == squareIndexes.Count)
+        {
+            foreach(var index in squareIndexes){
+                listGridSquare[index].GetComponent<GridSquare>().PlaceShapeOnBoard();
+            }
+
+            // int shapeLeft = 0;
+            // foreach(var shape in shapeStorage.shapeList)
+            // {
+            //     if(shape.IsOnStartPosition() && shape.IsAnyOfShapeSquareActive()) shapeLeft++;
+            // }
+           currentSelectedShape.DeactivateShape();
+            // if(shapeLeft == 0)
+            // {
+            //     GameEvent.RequestNewShapes?.Invoke();
+            // }
+            // else
+            // {
+            //     GameEvent.SetShapeInActive?.Invoke();
+            // }
+        }else{
+            GameEvent.MoveShapeToStartPosition?.Invoke();
+        }
+    }
+
     private void Start()
     {
         SpawnGridSquare();
         SetGridSquarePosition();
     }
+
     private void SpawnGridSquare()
     {
         int square_index = 0;
@@ -29,6 +82,7 @@ public class GridManager : MonoBehaviour
             for (int col = 0; col < cols; col++)
             {
                 listGridSquare.Add(SimplePool2.Spawn(gridSquare));
+                listGridSquare[listGridSquare.Count - 1].GetComponent<GridSquare>().SquareIndex = square_index;
                 listGridSquare[listGridSquare.Count - 1].transform.SetParent(this.transform);
                 listGridSquare[listGridSquare.Count-1].transform.localScale = new Vector3(squareScale, squareScale, squareScale);
                 listGridSquare[listGridSquare.Count - 1].GetComponent<GridSquare>().setFirstImage(square_index % 2 == 0);
@@ -59,8 +113,7 @@ public class GridManager : MonoBehaviour
             var pos_x_offset = col_num * offset.x + squareGapNum.x;
             var pos_y_offset = row_num * offset.y + squareGapNum.y;
 
-            square.GetComponent<RectTransform>().anchoredPosition = new Vector2(startPos.x + pos_x_offset, startPos.y + pos_y_offset);
-            square.GetComponent<RectTransform>().localPosition = new Vector3(startPos.x + pos_x_offset, startPos.y - pos_y_offset,0);
+            square.GetComponent<RectTransform>().anchoredPosition = new Vector2(startPos.x + pos_x_offset, startPos.y - pos_y_offset);
             col_num++;
         }
 

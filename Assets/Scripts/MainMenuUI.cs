@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,14 +10,18 @@ public class MainMenuUI : MonoBehaviour
 
     private void Awake()
     {
-        playBtn.onClick.AddListener(() =>
-        {
-            SceneLoader.LoadScene(SceneLoader.Scene.GamePlay);
-        });
+        playBtn.onClick.AddListener(OnPlayClicked);
     }
-    private void Start()
+
+    private void OnPlayClicked()
     {
-        playBtn.Select();
+        StartCoroutine(LoadGamePlayAfterDelay());
+    }
+
+    private IEnumerator LoadGamePlayAfterDelay()
+    {
+        yield return new WaitForSeconds(0.2f);
+        SceneLoader.LoadScene(SceneLoader.Scene.GamePlay);
     }
 
 
