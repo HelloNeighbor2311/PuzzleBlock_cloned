@@ -28,6 +28,15 @@ public class GridSquare : MonoBehaviour
         Selected = false;
         SquareOccupied = true;
     }
+    public void DeactivateSquare()
+    {
+        activeImage.gameObject.SetActive(false);
+    }
+    public void ClearOccupied()
+    {
+        Selected = false;
+        SquareOccupied = false;
+    }
     public void PlaceShapeOnBoard()
     {
         ActivateSquare();

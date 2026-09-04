@@ -45,7 +45,6 @@ public class ShapeStorage : MonoBehaviour
             {
                 return shape;
             }
-            Debug.LogError("No shape is currently selected");
         }
         return null;
     }

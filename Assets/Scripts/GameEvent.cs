@@ -5,8 +5,10 @@ using UnityEngine;
 
 public class GameEvent : MonoBehaviour
 {
+    public static Action<int> AddScores;
     public static Action CheckIfShapeCanBePlaced;
     public static Action MoveShapeToStartPosition;
     public static Action RequestNewShapes;
     public static Action SetShapeInActive;
+    public static Action<bool> GameOver; 
 }

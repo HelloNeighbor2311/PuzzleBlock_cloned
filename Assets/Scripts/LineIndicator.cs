@@ -32,6 +32,38 @@ public class LineIndicator : MonoBehaviour
         {57,58,59,  66,67,68,   75,76,77},
         {60,61,62 , 69,70,71,   78,79,80}
     };
+    [HideInInspector]
+    public int[] columnIndexes = new int[9]
+    {
+        0,1,2,3,4,5,6,7,8
+    };
+    private (int, int) GetSquarePosition(int squareIndex)
+    {
+        int pos_row = -1;
+        int pos_col = -1;
+        for(int row = 0; row < 9; row++)
+        {
+            for(int col = 0; col < 9; col++)
+            {
+               if(line_Data[row,col] == squareIndex)
+                {
+                    pos_row = row;
+                    pos_col = col;
+                } 
+            }
+        }
+        return (pos_row, pos_col);
+    }
+    public int[] getVerticalLine(int squareIndex)
+    {
+        int[] line = new int[9];
+        var square_Position_Col = GetSquarePosition(squareIndex).Item2;
+        for(int index = 0; index < 9; index++)
+        {
+            line[index] = line_Data[index,square_Position_Col];
+        }
+        return line;
+    }
 
     public int GetGridSquareIndex(int square)
     {
