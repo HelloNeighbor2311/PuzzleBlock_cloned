@@ -18,11 +18,11 @@ public class MenuButton : MonoBehaviour
     {
         mainMenuButton.onClick.AddListener(() =>
         {
-            LoadMainMenuScene();
+            LoadScene("MainMenu");
         });
     }
-    public void LoadMainMenuScene()
+    public void LoadScene(string sceneName)
     {
-        SceneManager.LoadScene(SceneLoader.Scene.MainMenu.ToString());
+        SceneManager.LoadScene(sceneName);
     }
 }

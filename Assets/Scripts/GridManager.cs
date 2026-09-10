@@ -219,8 +219,8 @@ public class GridManager : MonoBehaviour
         if(validShape == 0)
         {
             //Game over event
-            //GameEvent.GameOver(false);
-            Debug.LogWarning("You Lose. GAME OVER");
+            GameEvent.GameOver(false);
+            //Debug.LogWarning("You Lose. GAME OVER");
         }
     }
     private bool CheckIfShapeCanBePlaceOnGrid(Shape currentShape)
