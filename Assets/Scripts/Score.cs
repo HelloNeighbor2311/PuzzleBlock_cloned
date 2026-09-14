@@ -13,6 +13,7 @@ public class BestScoreData
 }
 public class Score : MonoBehaviour
 {
+    public SquareTextureDataSO squareTextureDataSO;
     private bool newBestScore = false;
     private BestScoreData bestScoreData = new BestScoreData();
     public TextMeshProUGUI score;
@@ -23,7 +24,7 @@ public class Score : MonoBehaviour
     {
         bestScoreData = BinaryDataStream.Read<BestScoreData>(bestScoreKey);
         yield return new WaitForEndOfFrame();
-        Debug.Log("Read best score: " + bestScoreData.score);
+        GameEvent.UpdateBestScoreBar(currentScore, bestScoreData.score);
     }
     private void Awake()
     {
@@ -36,6 +37,7 @@ public class Score : MonoBehaviour
     {
         currentScore = 0;
         newBestScore = false;
+        squareTextureDataSO.SetStartColor();
         UpdateScoreText();
     }
     private void OnEnable()
@@ -59,9 +61,20 @@ public class Score : MonoBehaviour
         {
             newBestScore = true;
             bestScoreData.score = currentScore;
+            SaveBestScore(true);
             //We might need to change when to update new bestscore into SaveBestScoreFunction instead of updating it everytime we scores
         }
+        UpdateSquareColor();
+        GameEvent.UpdateBestScoreBar(currentScore, bestScoreData.score);
         UpdateScoreText();
+    }
+    private void UpdateSquareColor()
+    {
+        if(GameEvent.UpdateSquareColor != null && currentScore >= squareTextureDataSO.thresholdVal)
+        {
+            squareTextureDataSO.UpdateColors(currentScore);
+            GameEvent.UpdateSquareColor(squareTextureDataSO.currentColor);
+        }
     }
     private void UpdateScoreText()
     {
