@@ -98,9 +98,9 @@ public class GridManager : MonoBehaviour
         }
 
         var completedLine = CheckIfSquaresAreCompleted(lines);
-        if(completedLine> 2)
+        if(completedLine>= 2)
         {
-            //TODO: Play bonus animation
+            GameEvent.ShowCongratulationWritings();
         }
         
         //Todo: Add score based on completedLine
