@@ -20,6 +20,7 @@ public class GridManager : MonoBehaviour
     private List<GameObject> listGridSquare = new List<GameObject>();
     private LineIndicator lineIndicator;
     private Config.SquareColor currentActiveSquareColor = Config.SquareColor.NotSet;
+    private List<Config.SquareColor> colorsOnTheGrid = new List<Config.SquareColor>();
     private void OnEnable()
     {
         GameEvent.CheckIfShapeCanBePlaced += CheckIfShapeCanBePlaced;
@@ -97,6 +98,9 @@ public class GridManager : MonoBehaviour
             lines.Add(data.ToArray());
         }
 
+        //This function need to be call before CheckIfSquaresAreCompleted
+        colorsOnTheGrid = GetAllSquareColorOnTheGrid();
+
         var completedLine = CheckIfSquaresAreCompleted(lines);
         if(completedLine>= 2)
         {
@@ -105,9 +109,39 @@ public class GridManager : MonoBehaviour
         
         //Todo: Add score based on completedLine
         var totalScores = 10 * completedLine;
-        GameEvent.AddScores?.Invoke(totalScores);
+        var bonusScore = ShouldPlayColorBonusAnimation();
+        GameEvent.AddScores?.Invoke(totalScores + bonusScore);
         CheckIfPlayerLost();
     }
+
+    //Checking the missing color on the grid to play Bonus Animation 
+    private int ShouldPlayColorBonusAnimation()
+    {
+        var colorInTheGridAfterLineRemoved = GetAllSquareColorOnTheGrid();
+        Config.SquareColor missingColor = Config.SquareColor.NotSet;
+        foreach(var i in colorsOnTheGrid)
+        {
+            if(colorInTheGridAfterLineRemoved.Contains(i) == false)
+            {
+                missingColor = i;
+            }
+        }
+        if(missingColor == Config.SquareColor.NotSet)
+        {
+            Debug.LogWarning("Cannot find the missing Color");
+            return 0;
+        }
+
+        //should never play bonus for the current color
+        if(missingColor == currentActiveSquareColor)
+        {
+            return 0;
+        }
+
+        GameEvent.ShowBonus(missingColor);
+        return 50;
+    }
+
     private int CheckIfSquaresAreCompleted(List<int[]> data)
     {
         List<int[]> completedLines = new List<int[]>();
@@ -160,6 +194,23 @@ public class GridManager : MonoBehaviour
     private void OnUpdateSquareColor(Config.SquareColor color)
     {
         currentActiveSquareColor = color;
+    }
+    private List<Config.SquareColor> GetAllSquareColorOnTheGrid()
+    {
+        var colors = new List<Config.SquareColor>();
+        foreach(var i in listGridSquare)
+        {
+            var _gridSquare = i.GetComponent<GridSquare>();
+            if (_gridSquare.SquareOccupied)
+            {
+                var color = _gridSquare.GetCurrentColor();
+                if(colors.Contains(color) == false)
+                {
+                    colors.Add(color);
+                }
+            }
+        }
+        return colors;
     }
     private void SpawnGridSquare()
     {

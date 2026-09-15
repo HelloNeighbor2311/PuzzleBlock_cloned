@@ -14,4 +14,5 @@ public class GameEvent : MonoBehaviour
     public static Action<bool> GameOver; 
     public static Action<Config.SquareColor> UpdateSquareColor;
     public static Action ShowCongratulationWritings;
+    public static Action<Config.SquareColor> ShowBonus;
 }
