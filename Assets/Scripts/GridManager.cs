@@ -50,6 +50,7 @@ public class GridManager : MonoBehaviour
 
         if(currentSelectedShape.TotalSquareNumber == squareIndexes.Count)
         {
+            GameEvent.PlaceShapeOnBoard?.Invoke();
             foreach(var index in squareIndexes){
                 listGridSquare[index].GetComponent<GridSquare>().PlaceShapeOnBoard(currentActiveSquareColor);
             }
@@ -102,9 +103,12 @@ public class GridManager : MonoBehaviour
         colorsOnTheGrid = GetAllSquareColorOnTheGrid();
 
         var completedLine = CheckIfSquaresAreCompleted(lines);
-        if(completedLine>= 2)
-        {
-            GameEvent.ShowCongratulationWritings();
+        if(completedLine >=1){
+            GameEvent.GettingPoints?.Invoke();
+            if(completedLine>= 2)
+            {
+                GameEvent.ShowCongratulationWritings();
+            }
         }
         
         //Todo: Add score based on completedLine

@@ -15,4 +15,7 @@ public class GameEvent : MonoBehaviour
     public static Action<Config.SquareColor> UpdateSquareColor;
     public static Action ShowCongratulationWritings;
     public static Action<Config.SquareColor> ShowBonus;
+    public static Action BeginDragShape;
+    public static Action PlaceShapeOnBoard;
+    public static Action GettingPoints;
 }
