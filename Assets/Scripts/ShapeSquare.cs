@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ShapeSquare : MonoBehaviour
+public class ShapeSquare : MonoBehaviour //This script handle behaviors of "specific square" when interacting with the grid or the shape bar 
 {
     [SerializeField] private Image occupiedImage;
 

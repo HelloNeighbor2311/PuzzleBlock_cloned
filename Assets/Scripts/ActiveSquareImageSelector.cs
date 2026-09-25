@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ActiveSquareImageSelector : MonoBehaviour
+public class ActiveSquareImageSelector : MonoBehaviour //This script handle "Change color of the squares base on the player's points"
 {
    public SquareTextureDataSO squareTextureDataSO;
    public bool updateImageOnReachedThreshold = false;

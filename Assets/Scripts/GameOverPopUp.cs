@@ -25,8 +25,8 @@ public class GameOverPopUp : MonoBehaviour
     private void OnGameOver(bool newBestScore)
     {
         gameOverPopUp.SetActive(true);
-        loosePopUp.SetActive(false);
-        newBestScorePopUp.SetActive(true);
+        loosePopUp.SetActive(!newBestScore);
+        newBestScorePopUp.SetActive(newBestScore);
     }
     // Update is called once per frame
     void Update()

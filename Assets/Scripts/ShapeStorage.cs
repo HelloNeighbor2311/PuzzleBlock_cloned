@@ -34,7 +34,7 @@ public class ShapeStorage : MonoBehaviour
         {
             int shapeIndex = UnityEngine.Random.Range(0,shapeData.Count);
             shape.CreateShape(shapeData[shapeIndex]);
-            Debug.Log("Shape " + shape.name + " created with data: " + shapeData[shapeIndex].name);
+            // Debug.Log("Shape " + shape.name + " created with data: " + shapeData[shapeIndex].name);
         }    
     }
     public Shape GetCurrentSelectedShape()

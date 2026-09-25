@@ -49,7 +49,6 @@ public class ShapeData : ScriptableObject
         for(var i = 0;i < rows; i++)
         {
             board[i] = new Row(columns);
-
         }
     }
 

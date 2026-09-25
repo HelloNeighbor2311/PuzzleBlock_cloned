@@ -272,16 +272,22 @@ public class GridManager : MonoBehaviour
         var validShape = 0;
         for(int index = 0; index < shapeStorage.shapeList.Count; index++)
         {
-            var isShapeActive = shapeStorage.shapeList[index].IsAnyOfShapeSquareActive();
-            if(CheckIfShapeCanBePlaceOnGrid(shapeStorage.shapeList[index]) && isShapeActive)
+            var shape = shapeStorage.shapeList[index];
+            if(!shape.IsOnStartPosition() || !shape.IsAnyOfShapeSquareActive())
             {
-                shapeStorage.shapeList[index]?.ActivateShape();
+                continue;
+            }
+
+            if(CheckIfShapeCanBePlaceOnGrid(shape))
+            {
+                shape.ActivateShape();
                 validShape++;
             }
         }
         if(validShape == 0)
         {
             //Game over event
+            Debug.Log("GameOver triggered! validShape = 0"); 
             GameEvent.GameOver(false);
             //Debug.LogWarning("You Lose. GAME OVER");
         }
@@ -334,7 +340,7 @@ public class GridManager : MonoBehaviour
         }
         return canBePlaced;
     }
-
+    //Helper to check whether a specific shape can be place on grid
     private List<int[]> GetAllSquaresCombination(int columns, int rows)
     {
         var squareList = new List<int[]>();

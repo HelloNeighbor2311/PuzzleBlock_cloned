@@ -50,7 +50,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   squareShapeImage: {fileID: 8130386829158688193, guid: 06d3b43849f466042b35695d0b2a3942, type: 3}
   currentShapeData: {fileID: 11400000, guid: ecc5febddf35067478bacd4d6b08368f, type: 2}
-  shapeSelectedScale: {x: 0.8, y: 0.8, z: 0.8}
-  shapePlacedScale: {x: 0, y: 0, z: 0}
-  offset: {x: 0, y: 700}
-  startPosition: {x: 0, y: 0}

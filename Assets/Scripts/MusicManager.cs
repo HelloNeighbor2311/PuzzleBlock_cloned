@@ -16,7 +16,6 @@ public class MusicManager : MonoBehaviour
         musicSource = GetComponent<AudioSource>();
         musicIndex = UnityEngine.Random.Range(0, themeClips.Count); 
         musicSource.time = musicTime;
-        DontDestroyOnLoad(gameObject);
     }
     private void Start()
     {

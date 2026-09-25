@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class MenuButton : MonoBehaviour
 {
-    [SerializeField] private Button mainMenuButton;
+
     void Awake()
     {
        if(Application.isEditor == false)
@@ -16,10 +16,7 @@ public class MenuButton : MonoBehaviour
     }
     void Start()
     {
-        mainMenuButton.onClick.AddListener(() =>
-        {
-            LoadScene("MainMenu");
-        });
+
     }
     public void LoadScene(string sceneName)
     {
